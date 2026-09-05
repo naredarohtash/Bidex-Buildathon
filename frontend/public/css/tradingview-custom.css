@@ -1,0 +1,255 @@
+/* Custom CSS for TradingView Charting Library (Bidex Gold Theme) */
+
+/* Target dark theme colors */
+.theme-dark {
+  --tv-color-platform-background: #09090b !important;
+  --tv-color-pane-background: #09090b !important;
+  --tv-color-pane-background-type-solid: #09090b !important;
+  --tv-color-toolbar-button-text: #a1a1aa !important;
+  --tv-color-toolbar-button-text-hover: #ffffff !important;
+  --tv-color-toolbar-button-text-active: #f7941d !important;
+  --tv-color-toolbar-button-background-hover: rgba(255, 255, 255, 0.05) !important;
+  --tv-color-toolbar-button-background-active: rgba(247, 148, 29, 0.1) !important;
+  --tv-color-toolbar-button-background-active-hover: rgba(247, 148, 29, 0.15) !important;
+  --tv-color-toolbar-divider: rgba(63, 63, 70, 0.4) !important;
+}
+
+/* Force dark charcoal background on html, body, and major panels */
+html.theme-dark,
+html.theme-dark body,
+.theme-dark .chart-page,
+.theme-dark .chart-container,
+.theme-dark .chart-controls-bar,
+.theme-dark #tv_chart_container {
+  background-color: #09090b !important;
+  background: #09090b !important;
+}
+
+/* Top toolbar area overrides */
+.theme-dark [data-name="header-toolbar"],
+.theme-dark .layout__area--top,
+.theme-dark .header-chart-panel {
+  background-color: #09090b !important;
+  background: #09090b !important;
+  border-bottom: 1px solid rgba(63, 63, 70, 0.4) !important;
+}
+
+/* Button colors */
+.theme-dark [data-name="header-toolbar"] button,
+.theme-dark .header-chart-panel button,
+.theme-dark [class*="button-"],
+.theme-dark [class*="item-"] {
+  color: #a1a1aa !important;
+}
+
+/* Button hovered states */
+.theme-dark [data-name="header-toolbar"] button:hover,
+.theme-dark .header-chart-panel button:hover,
+.theme-dark [class*="button-"]:hover,
+.theme-dark [class*="item-"]:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Active states: e.g. "1m" active interval or active icon styling */
+.theme-dark [class*="isActive-"],
+.theme-dark [class*="active-"],
+.theme-dark [class*="checked-"],
+.theme-dark button[class*="isActive"],
+.theme-dark button[class*="active"],
+.theme-dark div[class*="isActive"],
+.theme-dark div[class*="active"],
+.theme-dark button.isActive,
+.theme-dark button.active {
+  color: #f7941d !important; /* Gold highlight */
+}
+
+/* Specifically style the Indicators text and active button state to stand out in gold */
+.theme-dark [data-name="indicators"] [class*="text-"],
+.theme-dark [data-name="indicators"] span,
+.theme-dark button[class*="indicators"] [class*="text-"],
+.theme-dark button[class*="indicators"] span {
+  color: #f7941d !important;
+  font-weight: 600 !important;
+}
+
+.theme-dark [data-name="indicators"] svg,
+.theme-dark button[class*="indicators"] svg {
+  color: #f7941d !important;
+}
+
+/* Active interval styling in timeframe bar (e.g. "1m" selected) */
+.theme-dark [data-name="time-frames"] button[class*="isActive"],
+.theme-dark [data-name="time-frames"] button[class*="active"] {
+  color: #f7941d !important;
+  font-weight: 600 !important;
+}
+
+/* Adjust vertical toolbar dividers */
+.theme-dark [class*="separator-"],
+.theme-dark .header-chart-panel__separator {
+  background-color: rgba(63, 63, 70, 0.4) !important;
+  width: 1px !important;
+  height: 16px !important;
+  margin: 0 4px !important;
+  opacity: 0.5;
+}
+
+/* SVG icons coloration rules */
+.theme-dark svg {
+  fill: currentColor !important;
+}
+
+.theme-dark [class*="isActive-"] svg,
+.theme-dark [class*="active-"] svg,
+.theme-dark button.isActive svg {
+  fill: #f7941d !important;
+  color: #f7941d !important;
+}
+
+/* Force legend and status line transparency to fix the gray background issue */
+[class*="legend"],
+[class*="pane-legend"],
+[class*="legend-"],
+[class*="pane-legend-"],
+[class*="legendWrap-"],
+[class*="legendWrapper-"],
+[class*="chart-markup-table"],
+[class*="markupTable"],
+.chart-markup-table,
+.legend,
+.pane-legend,
+.pane-legend-line,
+[class*="legend"] *,
+[class*="pane-legend"] *,
+[class*="chart-markup-table"] *,
+[class*="markupTable"] * {
+  background-color: transparent !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Drawing toolbar border overrides */
+#drawing-toolbar,
+[data-drawing-toolbar] {
+  border-right: 1px solid #e4e4e7 !important;
+}
+
+.theme-dark #drawing-toolbar,
+.theme-dark [data-drawing-toolbar] {
+  border-right: 1px solid rgba(63, 63, 70, 0.4) !important;
+}
+
+/* Target navy theme colors */
+.theme-navy {
+  --tv-color-platform-background: #0b111e !important;
+  --tv-color-pane-background: #0b111e !important;
+  --tv-color-pane-background-type-solid: #0b111e !important;
+  --tv-color-toolbar-button-text: #a1a1aa !important;
+  --tv-color-toolbar-button-text-hover: #ffffff !important;
+  --tv-color-toolbar-button-text-active: #3b82f6 !important; /* Blue active text for navy */
+  --tv-color-toolbar-button-background-hover: rgba(255, 255, 255, 0.05) !important;
+  --tv-color-toolbar-button-background-active: rgba(59, 130, 246, 0.1) !important;
+  --tv-color-toolbar-button-background-active-hover: rgba(59, 130, 246, 0.15) !important;
+  --tv-color-toolbar-divider: rgba(63, 63, 70, 0.4) !important;
+}
+
+/* Force navy background on html, body, and major panels */
+html.theme-navy,
+html.theme-navy body,
+.theme-navy .chart-page,
+.theme-navy .chart-container,
+.theme-navy .chart-controls-bar,
+.theme-navy #tv_chart_container {
+  background-color: #0b111e !important;
+  background: #0b111e !important;
+}
+
+/* Top toolbar area overrides for navy */
+.theme-navy [data-name="header-toolbar"],
+.theme-navy .layout__area--top,
+.theme-navy .header-chart-panel {
+  background-color: #0b111e !important;
+  background: #0b111e !important;
+  border-bottom: 1px solid rgba(63, 63, 70, 0.4) !important;
+}
+
+/* Button colors */
+.theme-navy [data-name="header-toolbar"] button,
+.theme-navy .header-chart-panel button,
+.theme-navy [class*="button-"],
+.theme-navy [class*="item-"] {
+  color: #a1a1aa !important;
+}
+
+/* Button hovered states */
+.theme-navy [data-name="header-toolbar"] button:hover,
+.theme-navy .header-chart-panel button:hover,
+.theme-navy [class*="button-"]:hover,
+.theme-navy [class*="item-"]:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Active states */
+.theme-navy [class*="isActive-"],
+.theme-navy [class*="active-"],
+.theme-navy [class*="checked-"],
+.theme-navy button[class*="isActive"],
+.theme-navy button[class*="active"],
+.theme-navy div[class*="isActive"],
+.theme-navy div[class*="active"],
+.theme-navy button.isActive,
+.theme-navy button.active {
+  color: #3b82f6 !important; /* Blue highlight */
+}
+
+/* Specifically style the Indicators text and active button state in blue */
+.theme-navy [data-name="indicators"] [class*="text-"],
+.theme-navy [data-name="indicators"] span,
+.theme-navy button[class*="indicators"] [class*="text-"],
+.theme-navy button[class*="indicators"] span {
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+}
+
+.theme-navy [data-name="indicators"] svg,
+.theme-navy button[class*="indicators"] svg {
+  color: #3b82f6 !important;
+}
+
+/* Active interval styling in timeframe bar */
+.theme-navy [data-name="time-frames"] button[class*="isActive"],
+.theme-navy [data-name="time-frames"] button[class*="active"] {
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+}
+
+/* Adjust vertical toolbar dividers */
+.theme-navy [class*="separator-"],
+.theme-navy .header-chart-panel__separator {
+  background-color: rgba(63, 63, 70, 0.4) !important;
+  width: 1px !important;
+  height: 16px !important;
+  margin: 0 4px !important;
+  opacity: 0.5;
+}
+
+/* SVG icons coloration rules */
+.theme-navy svg {
+  fill: currentColor !important;
+}
+
+.theme-navy [class*="isActive-"] svg,
+.theme-navy [class*="active-"] svg,
+.theme-navy button.isActive svg {
+  fill: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+.theme-navy #drawing-toolbar,
+.theme-navy [data-drawing-toolbar] {
+  border-right: 1px solid rgba(63, 63, 70, 0.4) !important;
+}

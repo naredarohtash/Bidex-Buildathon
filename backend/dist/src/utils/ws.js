@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0});exports.parseParams=void 0;const parseParams=(s,e)=>{const r=s.split("/"),t=e.split("/"),a={};for(let s=0;s<r.length;s++){const e=r[s];e.startsWith(":")&&(a[e.slice(1)]=t[s])}return a};exports.parseParams=parseParams;

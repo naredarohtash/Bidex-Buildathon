@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+<!--
+  The support thread's wallpaper.
+
+  Used as a CSS mask, never as a picture: the layer under it is
+  `bg-foreground/[0.05]`, so the ink is the theme's own and the pattern
+  inverts with it. The reference for this was a grey-on-white PNG, and a PNG
+  bakes its ink colour in — white scratches on near-black in dark, invisible
+  in navy.
+
+  Strokes are white. A mask is read as alpha by some engines and as luminance
+  by others; opaque white is "show" under both.
+
+  ── Why it is laid out the way it is ────────────────────────────────────────
+
+  The first attempt was 27 shapes on a 220px tile at full size, and it read as
+  a sparse grid of logos rather than as wallpaper: you could see the repeat,
+  and each icon was big enough to be looked *at* instead of past.
+
+  This is a jittered 9x9 grid on a 300px tile — 81 marks at roughly half the
+  size. Two things make it work:
+
+  - **A third of the marks are fillers.** Dots, dashes, commas and ticks. That
+    is the reference image's real trick: the icons alone leave holes, and the
+    small marks are what turn holes into texture.
+  - **Cell centres sit half a cell in from each edge**, so the gap across a
+    tile seam is the same 33px as the gap inside it. The repeat is seamless
+    without any shape being clipped.
+
+  Placements are generated, not hand-placed — see scratch `gen-doodles.mjs`
+  in the commit that added this. Regenerating with a different seed gives a
+  different scatter at the same density.
+-->
+<defs>
+  <g id="bubble"><path d="M-11-8a3 3 0 0 1 3-3h16a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-9l-5 4v-4h-2a3 3 0 0 1-3-3z"/></g>
+  <g id="chat2"><path d="M-12-6a3 3 0 0 1 3-3h13a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-8l-5 4v-4h-.5a3 3 0 0 1-2.5-3z"/><path d="M7-9v-2a3 3 0 0 1 3-3h1"/></g>
+  <g id="heart"><path d="M0 9S-9 3-9-2.4A4.6 4.6 0 0 1-4.6-7 4.8 4.8 0 0 1 0-4.2 4.8 4.8 0 0 1 4.6-7 4.6 4.6 0 0 1 9-2.4C9 3 0 9 0 9z"/></g>
+  <g id="star"><path d="M0-10l3 6.2 6.8 1-5 4.8 1.2 6.8L0 5.6-6 8.8l1.2-6.8-5-4.8 6.8-1z"/></g>
+  <g id="smiley"><circle cx="0" cy="0" r="9.6"/><circle cx="-3.4" cy="-2.4" r="1"/><circle cx="3.4" cy="-2.4" r="1"/><path d="M-4.6 3a5.6 5.6 0 0 0 9.2 0"/></g>
+  <g id="mail"><rect x="-11" y="-7.5" width="22" height="15" rx="2.4"/><path d="M-9.6-6 0 .8 9.6-6"/></g>
+  <g id="cup"><path d="M-8-6h13v8a4.6 4.6 0 0 1-4.6 4.6h-3.8A4.6 4.6 0 0 1-8 2z"/><path d="M5-3.6h2.4a2.8 2.8 0 0 1 0 5.6H5"/><path d="M-5.6 9h8.2"/></g>
+  <g id="phones"><path d="M-9 1v-2.6a9 9 0 0 1 18 0V1"/><rect x="-10" y="0" width="4.4" height="7" rx="2.2"/><rect x="5.6" y="0" width="4.4" height="7" rx="2.2"/></g>
+  <g id="ticket"><path d="M-12-6.5A2.2 2.2 0 0 1-9.8-8.7h19.6a2.2 2.2 0 0 1 2.2 2.2v1.8a2.4 2.4 0 0 0 0 4.8v1.8a2.2 2.2 0 0 1-2.2 2.2H-9.8A2.2 2.2 0 0 1-12 1.9V.1a2.4 2.4 0 0 0 0-4.8z"/><path d="M-4.6-8.7v2M-4.6-1.3v2M-4.6 6.1v2"/></g>
+  <g id="clock"><circle cx="0" cy="0" r="9.2"/><path d="M0-5.4V0l3.8 2.6"/></g>
+  <g id="clip"><path d="M7-4-1.4 4.4a4.4 4.4 0 0 1-6.2-6.2L.7-10.2a2.9 2.9 0 0 1 4.1 4.1L-3.5 2.3a1.5 1.5 0 0 1-2-2.1L2.1-7.5"/></g>
+  <g id="bolt"><path d="M1.6-10-6 .6h5.6L-1.6 9 6-1.6H.4z"/></g>
+  <g id="tick"><path d="M-8 0-2.8 5.4 7.6-6.6"/></g>
+  <g id="ask"><path d="M-4-4.4a4 4 0 1 1 5.4 3.8c-.9.4-1.5 1.2-1.5 2.2v.8"/><circle cx="0" cy="6" r="1.1"/></g>
+  <g id="gift"><rect x="-9" y="-3" width="18" height="12" rx="1.6"/><path d="M-9 1.2h18M0-3v12"/><path d="M0-3S-2.4-8.4-5-7.2c-2.1 1-.4 4.2 5 4.2zM0-3S2.4-8.4 5-7.2c2.1 1-.4 4.2-5 4.2z"/></g>
+  <g id="cam"><path d="M-10-2.6A2.4 2.4 0 0 1-7.6-5h2.9L-3-7.4h6.2L4.9-5h2.7A2.4 2.4 0 0 1 10-2.6V6.6A2.4 2.4 0 0 1 7.6 9H-7.6A2.4 2.4 0 0 1-10 6.6z"/><circle cx="0" cy="2" r="3.9"/></g>
+  <g id="bell"><path d="M-5.2 4.4c0-5.2.4-9.6 5.2-9.6s5.2 4.4 5.2 9.6L7 6.8H-7z"/><path d="M-1.8 9.2a2 2 0 0 0 3.6 0"/><path d="M0-5.2v-2.6"/></g>
+  <g id="note"><path d="M-2.4 5.6V-6.6L7-8v12.2"/><circle cx="-4.6" cy="6" r="2.4"/><circle cx="4.8" cy="4.6" r="2.4"/></g>
+  <g id="cloud"><path d="M-6 5.4a5 5 0 0 1 .6-10A6.6 6.6 0 0 1 7-2.8a4.1 4.1 0 0 1-.5 8.2z"/></g>
+  <g id="doc"><path d="M-8-8.4A2.2 2.2 0 0 1-5.8-10.6h8.4l5 5V8.2A2.2 2.2 0 0 1 5.4 10.4H-5.8A2.2 2.2 0 0 1-8 8.2z"/><path d="M2.6-10.6v5h5M-4.4 1h8M-4.4 4.6h6"/></g>
+  <g id="arrow"><path d="M-8 0h15M1.6-5.4 7 0 1.6 5.4"/></g>
+  <g id="shield"><path d="M0-10-8-6.8v6.2C-8 4.4-4.6 8.6 0 9.6c4.6-1 8-5.2 8-10.2V-6.8z"/></g>
+  <g id="dot"><circle cx="0" cy="0" r="1.6"/></g>
+  <g id="dot3"><circle cx="-5" cy="0" r="1.4"/><circle cx="0" cy="0" r="1.4"/><circle cx="5" cy="0" r="1.4"/></g>
+  <g id="dash"><path d="M-5 0h10"/></g>
+  <g id="comma"><path d="M-1.5-2.5a2.6 2.6 0 1 1 2.6 2.6C.4 1.2-.2 2.2-1.5 3"/></g>
+  <g id="tick2"><path d="M-4 0-1 3 4-3"/></g>
+  <g id="tiny"><path d="M-3-3 3 3M3-3-3 3"/></g>
+</defs>
+
+<g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <use href="#ask" transform="translate(14.9,20.1) rotate(-9.9) scale(0.66)"/>
+  <use href="#tick2" transform="translate(58.2,24.9) rotate(4) scale(1)"/>
+  <use href="#dot3" transform="translate(81.0,24.0) rotate(-15.7) scale(1)"/>
+  <use href="#clock" transform="translate(115.9,22.4) rotate(2.9) scale(0.63)"/>
+  <use href="#doc" transform="translate(157.8,13.0) rotate(8.1) scale(0.53)"/>
+  <use href="#ticket" transform="translate(188.2,12.6) rotate(13.6) scale(0.64)"/>
+  <use href="#dash" transform="translate(208.4,22.4) rotate(-12.8) scale(1)"/>
+  <use href="#note" transform="translate(255.5,16.0) rotate(15.8) scale(0.59)"/>
+  <use href="#note" transform="translate(291.3,13.2) rotate(6.7) scale(0.55)"/>
+  <use href="#dash" transform="translate(13.9,43.2) rotate(-14.3) scale(1)"/>
+  <use href="#dot" transform="translate(45.7,42.5) rotate(19.2) scale(1)"/>
+  <use href="#tick" transform="translate(87.7,53.1) rotate(3.5) scale(0.56)"/>
+  <use href="#doc" transform="translate(118.2,50.9) rotate(18.5) scale(0.6)"/>
+  <use href="#clip" transform="translate(156.2,43.4) rotate(-9.4) scale(0.53)"/>
+  <use href="#tiny" transform="translate(179.8,48.2) rotate(5.9) scale(1)"/>
+  <use href="#bell" transform="translate(213.6,46.2) rotate(4.5) scale(0.51)"/>
+  <use href="#tick2" transform="translate(248.5,42.4) rotate(-0.4) scale(1)"/>
+  <use href="#tick2" transform="translate(277.9,41.9) rotate(-14.7) scale(1)"/>
+  <use href="#smiley" transform="translate(12.8,80.4) rotate(-16.4) scale(0.7)"/>
+  <use href="#dash" transform="translate(54.3,90.1) rotate(14.2) scale(1)"/>
+  <use href="#dot3" transform="translate(75.1,84.5) rotate(8) scale(1)"/>
+  <use href="#bolt" transform="translate(124.9,90.3) rotate(-18.3) scale(0.57)"/>
+  <use href="#bell" transform="translate(147.2,78.8) rotate(0.1) scale(0.56)"/>
+  <use href="#comma" transform="translate(191.3,84.2) rotate(12.2) scale(1)"/>
+  <use href="#dot3" transform="translate(220.3,81.1) rotate(-18.8) scale(1)"/>
+  <use href="#chat2" transform="translate(253.1,87.9) rotate(-10.3) scale(0.52)"/>
+  <use href="#heart" transform="translate(278.3,76.9) rotate(2.5) scale(0.54)"/>
+  <use href="#ask" transform="translate(20.8,120.6) rotate(-5.7) scale(0.6)"/>
+  <use href="#tick" transform="translate(58.1,116.8) rotate(-13.4) scale(0.67)"/>
+  <use href="#ticket" transform="translate(86.5,123.5) rotate(16.3) scale(0.68)"/>
+  <use href="#note" transform="translate(120.1,120.7) rotate(-10.4) scale(0.6)"/>
+  <use href="#dash" transform="translate(151.8,110.2) rotate(4.8) scale(1)"/>
+  <use href="#comma" transform="translate(191.2,111.3) rotate(2) scale(1)"/>
+  <use href="#shield" transform="translate(211.6,118.8) rotate(19.6) scale(0.58)"/>
+  <use href="#dot3" transform="translate(249.4,119.5) rotate(-16.1) scale(1)"/>
+  <use href="#dot" transform="translate(275.4,112.9) rotate(-17.6) scale(1)"/>
+  <use href="#clip" transform="translate(19.4,144.0) rotate(10.6) scale(0.66)"/>
+  <use href="#clock" transform="translate(57.6,147.0) rotate(-17.2) scale(0.57)"/>
+  <use href="#tick2" transform="translate(87.8,141.8) rotate(-12.5) scale(1)"/>
+  <use href="#heart" transform="translate(124.2,157.3) rotate(-3) scale(0.56)"/>
+  <use href="#arrow" transform="translate(157.5,145.4) rotate(-0.4) scale(0.52)"/>
+  <use href="#arrow" transform="translate(188.4,151.2) rotate(-7.3) scale(0.71)"/>
+  <use href="#gift" transform="translate(218.4,152.3) rotate(-10.7) scale(0.66)"/>
+  <use href="#comma" transform="translate(244.0,155.2) rotate(-14.4) scale(1)"/>
+  <use href="#shield" transform="translate(282.3,156.3) rotate(-16.1) scale(0.54)"/>
+  <use href="#bolt" transform="translate(10.5,175.8) rotate(5.4) scale(0.65)"/>
+  <use href="#chat2" transform="translate(49.3,186.8) rotate(-9.4) scale(0.54)"/>
+  <use href="#cam" transform="translate(76.9,190.6) rotate(-11) scale(0.55)"/>
+  <use href="#comma" transform="translate(116.5,175.3) rotate(-1.8) scale(1)"/>
+  <use href="#shield" transform="translate(148.7,178.5) rotate(-16.3) scale(0.72)"/>
+  <use href="#arrow" transform="translate(178.7,186.6) rotate(5.8) scale(0.63)"/>
+  <use href="#heart" transform="translate(215.0,178.8) rotate(-13.3) scale(0.51)"/>
+  <use href="#smiley" transform="translate(244.2,186.7) rotate(8.2) scale(0.54)"/>
+  <use href="#shield" transform="translate(275.8,186.2) rotate(2.6) scale(0.72)"/>
+  <use href="#dot3" transform="translate(22.5,221.7) rotate(4.6) scale(1)"/>
+  <use href="#smiley" transform="translate(42.2,209.4) rotate(-6.3) scale(0.71)"/>
+  <use href="#star" transform="translate(79.3,218.3) rotate(14.9) scale(0.52)"/>
+  <use href="#heart" transform="translate(110.4,222.8) rotate(-1.6) scale(0.61)"/>
+  <use href="#ask" transform="translate(151.5,213.2) rotate(-11.4) scale(0.64)"/>
+  <use href="#clock" transform="translate(180.2,213.6) rotate(-18.2) scale(0.56)"/>
+  <use href="#dash" transform="translate(224.8,218.0) rotate(-0.5) scale(1)"/>
+  <use href="#cloud" transform="translate(249.5,213.4) rotate(-6.4) scale(0.59)"/>
+  <use href="#tiny" transform="translate(277.2,209.8) rotate(-10.2) scale(1)"/>
+  <use href="#chat2" transform="translate(10.1,256.8) rotate(0.2) scale(0.57)"/>
+  <use href="#tiny" transform="translate(49.3,254.4) rotate(-1.7) scale(1)"/>
+  <use href="#note" transform="translate(78.7,247.4) rotate(-5.2) scale(0.58)"/>
+  <use href="#dot" transform="translate(119.1,242.7) rotate(7.7) scale(1)"/>
+  <use href="#tick2" transform="translate(147.8,258.1) rotate(-19.8) scale(1)"/>
+  <use href="#cam" transform="translate(182.4,243.8) rotate(16.8) scale(0.52)"/>
+  <use href="#dot" transform="translate(221.2,246.9) rotate(-18.2) scale(1)"/>
+  <use href="#ticket" transform="translate(243.7,249.7) rotate(-19.4) scale(0.61)"/>
+  <use href="#gift" transform="translate(288.2,248.3) rotate(-19.2) scale(0.56)"/>
+  <use href="#dash" transform="translate(12.1,282.8) rotate(-16.4) scale(1)"/>
+  <use href="#dot" transform="translate(56.9,284.0) rotate(-17.7) scale(1)"/>
+  <use href="#dot3" transform="translate(80.2,288.9) rotate(-19.3) scale(1)"/>
+  <use href="#smiley" transform="translate(114.9,285.1) rotate(10.6) scale(0.56)"/>
+  <use href="#cam" transform="translate(157.8,280.0) rotate(-17.4) scale(0.66)"/>
+  <use href="#doc" transform="translate(177.2,283.2) rotate(-10.5) scale(0.55)"/>
+  <use href="#dot" transform="translate(212.0,283.5) rotate(10.5) scale(1)"/>
+  <use href="#dot" transform="translate(245.6,287.2) rotate(7.3) scale(1)"/>
+  <use href="#phones" transform="translate(280.5,282.6) rotate(3.6) scale(0.57)"/>
+</g>
+</svg>

@@ -1,0 +1,3209 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Documentation",
+    "version": "1.0.0",
+    "description": "This is the API documentation for the site, powered by Mash Server."
+  },
+  "paths": {
+    "/api/exchange/binary/duration": {
+      "get": {
+        "summary": "List Available Binary Durations",
+        "operationId": "listBinaryDurations",
+        "tags": [
+          "Exchange",
+          "Binary"
+        ],
+        "description": "Retrieves a list of available durations for binary options with calculated profit percentages.",
+        "logModule": "EXCHANGE",
+        "logTitle": "Get Binary Durations",
+        "responses": {
+          "200": {
+            "description": "A list of binary durations with calculated profit percentages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "duration": {
+                        "type": "number"
+                      },
+                      "profitPercentageRiseFall": {
+                        "type": "number"
+                      },
+                      "profitPercentageHigherLower": {
+                        "type": "number"
+                      },
+                      "profitPercentageTouchNoTouch": {
+                        "type": "number"
+                      },
+                      "profitPercentageCallPut": {
+                        "type": "number"
+                      },
+                      "profitPercentageTurbo": {
+                        "type": "number"
+                      },
+                      "status": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Binary Duration not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/binary/health": {
+      "get": {
+        "summary": "Binary Trading Health Check",
+        "operationId": "binaryHealthCheck",
+        "tags": [
+          "Binary",
+          "Health"
+        ],
+        "description": "Checks the health status of the binary trading system including database connectivity, order processing, and system configuration.",
+        "responses": {
+          "200": {
+            "description": "Health check completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "healthy",
+                        "degraded",
+                        "down"
+                      ],
+                      "description": "Overall system health status"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp of health check"
+                    },
+                    "checks": {
+                      "type": "object",
+                      "properties": {
+                        "system": {
+                          "type": "object"
+                        },
+                        "database": {
+                          "type": "object"
+                        },
+                        "durations": {
+                          "type": "object"
+                        },
+                        "markets": {
+                          "type": "object"
+                        },
+                        "orders": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Health check failed"
+          }
+        },
+        "requiresAuth": false,
+        "logModule": "BINARY_HEALTH",
+        "logTitle": "Binary Trading Health Check",
+        "security": []
+      }
+    },
+    "/api/exchange/binary/leaderboard": {
+      "get": {
+        "summary": "Get Binary Trading Leaderboard",
+        "operationId": "getBinaryLeaderboard",
+        "tags": [
+          "Exchange",
+          "Binary",
+          "Leaderboard"
+        ],
+        "description": "Retrieves the top traders leaderboard for binary options trading. Supports different time periods and ranking metrics.",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "description": "Time period for the leaderboard: daily, weekly, monthly, alltime",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "daily",
+                "weekly",
+                "monthly",
+                "alltime"
+              ]
+            }
+          },
+          {
+            "name": "metric",
+            "in": "query",
+            "description": "Ranking metric: profit (total profit), winRate (win percentage), volume (trade count)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "profit",
+                "winRate",
+                "volume"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of traders to return (default 100, max 100)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard data with top traders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": {
+                      "type": "string"
+                    },
+                    "metric": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "traders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "rank": {
+                            "type": "number"
+                          },
+                          "username": {
+                            "type": "string"
+                          },
+                          "avatar": {
+                            "type": "string"
+                          },
+                          "totalProfit": {
+                            "type": "number"
+                          },
+                          "winRate": {
+                            "type": "number"
+                          },
+                          "totalTrades": {
+                            "type": "number"
+                          },
+                          "wins": {
+                            "type": "number"
+                          },
+                          "losses": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Leaderboard not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": false,
+        "security": []
+      }
+    },
+    "/api/exchange/binary/leaderboard/me": {
+      "get": {
+        "summary": "Get User's Leaderboard Position",
+        "operationId": "getUserLeaderboardPosition",
+        "tags": [
+          "Exchange",
+          "Binary",
+          "Leaderboard"
+        ],
+        "description": "Retrieves the authenticated user's ranking and trading statistics for the leaderboard.",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "description": "Time period for the ranking: daily, weekly, monthly, alltime",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "daily",
+                "weekly",
+                "monthly",
+                "alltime"
+              ]
+            }
+          },
+          {
+            "name": "metric",
+            "in": "query",
+            "description": "Ranking metric: profit (total profit), winRate (win percentage), volume (trade count)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "profit",
+                "winRate",
+                "volume"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User's leaderboard position and stats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rank": {
+                      "type": "number"
+                    },
+                    "totalTraders": {
+                      "type": "number"
+                    },
+                    "percentile": {
+                      "type": "number"
+                    },
+                    "qualified": {
+                      "type": "boolean"
+                    },
+                    "minTradesRequired": {
+                      "type": "number"
+                    },
+                    "stats": {
+                      "type": "object",
+                      "properties": {
+                        "totalProfit": {
+                          "type": "number"
+                        },
+                        "winRate": {
+                          "type": "number"
+                        },
+                        "totalTrades": {
+                          "type": "number"
+                        },
+                        "wins": {
+                          "type": "number"
+                        },
+                        "losses": {
+                          "type": "number"
+                        },
+                        "bestStreak": {
+                          "type": "number"
+                        },
+                        "avgProfit": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User stats not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/exchange/binary/market": {
+      "get": {
+        "summary": "List Binary Markets",
+        "operationId": "listBinaryMarkets",
+        "tags": [
+          "Exchange",
+          "Binary",
+          "Markets"
+        ],
+        "description": "Retrieves a list of all available binary trading markets.",
+        "logModule": "EXCHANGE",
+        "logTitle": "Get Binary Markets",
+        "responses": {
+          "200": {
+            "description": "A list of binary markets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Market ID"
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Base currency"
+                      },
+                      "pair": {
+                        "type": "string",
+                        "description": "Quote currency"
+                      },
+                      "isTrending": {
+                        "type": "boolean",
+                        "description": "Whether the market is trending"
+                      },
+                      "isHot": {
+                        "type": "boolean",
+                        "description": "Whether the market is hot"
+                      },
+                      "status": {
+                        "type": "boolean",
+                        "description": "Market status"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Binary Market not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/binary/order": {
+      "get": {
+        "summary": "List Orders",
+        "operationId": "listOrders",
+        "tags": [
+          "Exchange",
+          "Orders"
+        ],
+        "description": "Retrieves a list of orders for the authenticated user.",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Type of order to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "currency of the order to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pair",
+            "in": "query",
+            "description": "pair of the order to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create Binary Order",
+        "operationId": "createBinaryOrder",
+        "tags": [
+          "Binary",
+          "Orders"
+        ],
+        "description": "Creates a new binary order for the authenticated user.",
+        "requestBody": {
+          "description": "Binary order data to be created.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string"
+                  },
+                  "pair": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "side": {
+                    "type": "string"
+                  },
+                  "closedAt": {
+                    "type": "string"
+                  },
+                  "isDemo": {
+                    "type": "boolean"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "durationId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Binary Order created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Confirmation message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/exchange/binary/order/last": {
+      "get": {
+        "summary": "List Binary Orders from Last 30 Days",
+        "operationId": "listBinaryOrdersLast30Days",
+        "tags": [
+          "Binary",
+          "Orders"
+        ],
+        "description": "Retrieves the non-pending binary orders for practice and non-practice accounts from the last 30 days and compares them with the previous month.",
+        "responses": {
+          "200": {
+            "description": "A list of binary orders from the last 30 days",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "practiceOrders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {}
+                      }
+                    },
+                    "nonPracticeOrders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {}
+                      }
+                    },
+                    "livePercentageChange": {
+                      "type": "number"
+                    },
+                    "practicePercentageChange": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/exchange/binary/order/{id}": {
+      "del": {
+        "summary": "Cancel Binary Order",
+        "operationId": "cancelBinaryOrder",
+        "tags": [
+          "Binary",
+          "Orders"
+        ],
+        "description": "Cancels a binary order for the authenticated user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the binary order to cancel.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Cancellation percentage data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "percentage": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "Binary order cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Binary Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "Show Binary Order",
+        "operationId": "showBinaryOrder",
+        "tags": [
+          "Binary",
+          "Orders"
+        ],
+        "description": "Retrieves a specific binary order by ID for the authenticated user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the binary order to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary order data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "ID of the binary order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false,
+                      "x-expectedFormat": "uuid"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "description": "User ID associated with the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "symbol": {
+                      "type": "string",
+                      "description": "Trading symbol",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "price": {
+                      "type": "number",
+                      "description": "Entry price of the order",
+                      "nullable": false
+                    },
+                    "amount": {
+                      "type": "number",
+                      "description": "Amount of the order",
+                      "nullable": false
+                    },
+                    "profit": {
+                      "type": "number",
+                      "description": "Profit from the order",
+                      "nullable": false
+                    },
+                    "side": {
+                      "type": "string",
+                      "description": "Side of the order (e.g., BUY, SELL)",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Type of order (e.g., LIMIT, MARKET)",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status of the order (e.g., OPEN, CLOSED)",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "isDemo": {
+                      "type": "boolean",
+                      "description": "Whether the order is a demo"
+                    },
+                    "closedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Time when the order was closed",
+                      "nullable": true
+                    },
+                    "closePrice": {
+                      "type": "number",
+                      "description": "Price at which the order was closed",
+                      "nullable": false
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Creation date of the order",
+                      "nullable": false
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Last update date of the order",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Binary Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/binary/settings": {
+      "get": {
+        "summary": "Get Binary Trading Settings",
+        "description": "Returns binary trading configuration for the trading interface",
+        "operationId": "getBinarySettings",
+        "tags": [
+          "Binary",
+          "Settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary settings retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "settings": {
+                      "type": "object",
+                      "description": "Binary trading settings"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/chart": {
+      "get": {
+        "summary": "Get Historical Chart Data",
+        "operationId": "getHistoricalChartData",
+        "tags": [
+          "Chart",
+          "Historical"
+        ],
+        "description": "Retrieves historical chart data for the authenticated user.",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "query",
+            "description": "Symbol to retrieve data for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "interval",
+            "in": "query",
+            "description": "Interval to retrieve data for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Start timestamp to retrieve data from.",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "End timestamp to retrieve data from.",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "duration",
+            "in": "query",
+            "description": "Duration to retrieve data for.",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical chart data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "timestamp": {
+                        "type": "number",
+                        "description": "Timestamp for the data point",
+                        "nullable": false
+                      },
+                      "open": {
+                        "type": "number",
+                        "description": "Opening price for the data interval",
+                        "nullable": false
+                      },
+                      "high": {
+                        "type": "number",
+                        "description": "Highest price during the data interval",
+                        "nullable": false
+                      },
+                      "low": {
+                        "type": "number",
+                        "description": "Lowest price during the data interval",
+                        "nullable": false
+                      },
+                      "close": {
+                        "type": "number",
+                        "description": "Closing price for the data interval",
+                        "nullable": false
+                      },
+                      "volume": {
+                        "type": "number",
+                        "description": "Volume of trades during the data interval",
+                        "nullable": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chart not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/currency": {
+      "get": {
+        "summary": "List Currencies",
+        "operationId": "getCurrencies",
+        "tags": [
+          "Currencies"
+        ],
+        "description": "Retrieves a list of all currencies.",
+        "responses": {
+          "200": {
+            "description": "A list of currencies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the currency",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Currency code (e.g., USD, EUR)",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Full name of the currency",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "precision": {
+                        "type": "number",
+                        "description": "Number of decimal places used by the currency",
+                        "nullable": false
+                      },
+                      "price": {
+                        "type": "number",
+                        "description": "Current price of the currency in USD",
+                        "nullable": false
+                      },
+                      "status": {
+                        "type": "boolean",
+                        "description": "Active status of the currency"
+                      },
+                      "chains": {
+                        "type": "object",
+                        "description": "Blockchain networks supported by the currency",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "network": {
+                              "type": "string",
+                              "description": "Network name",
+                              "maxLength": 255,
+                              "minLength": 0,
+                              "nullable": false
+                            },
+                            "protocol": {
+                              "type": "string",
+                              "description": "Protocol used",
+                              "maxLength": 255,
+                              "minLength": 0,
+                              "nullable": false
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Currency not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/currency/{id}": {
+      "get": {
+        "summary": "Show Currency",
+        "operationId": "getCurrency",
+        "tags": [
+          "Currencies"
+        ],
+        "description": "Retrieves details of a specific currency by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the currency to retrieve.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currency details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the currency",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "Currency code (e.g., USD, EUR)",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Full name of the currency",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "precision": {
+                      "type": "number",
+                      "description": "Number of decimal places used by the currency",
+                      "nullable": false
+                    },
+                    "price": {
+                      "type": "number",
+                      "description": "Current price of the currency in USD",
+                      "nullable": false
+                    },
+                    "status": {
+                      "type": "boolean",
+                      "description": "Active status of the currency"
+                    },
+                    "chains": {
+                      "type": "object",
+                      "description": "Blockchain networks supported by the currency",
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "network": {
+                            "type": "string",
+                            "description": "Network name",
+                            "maxLength": 255,
+                            "minLength": 0,
+                            "nullable": false
+                          },
+                          "protocol": {
+                            "type": "string",
+                            "description": "Protocol used",
+                            "maxLength": 255,
+                            "minLength": 0,
+                            "nullable": false
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Currency not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/market": {
+      "get": {
+        "summary": "List Exchange Markets",
+        "operationId": "listMarkets",
+        "tags": [
+          "Exchange",
+          "Markets"
+        ],
+        "description": "Retrieves a list of all available markets.",
+        "parameters": [
+          {
+            "name": "eco",
+            "in": "query",
+            "required": true,
+            "description": "include eco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of markets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the market",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Primary currency of the market",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "pair": {
+                        "type": "string",
+                        "description": "Currency pair traded in this market",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "isTrending": {
+                        "type": "boolean",
+                        "description": "Indicator if the market is currently trending"
+                      },
+                      "isHot": {
+                        "type": "boolean",
+                        "description": "Indicator if the market is currently considered 'hot'"
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "description": "Additional metadata about the market",
+                        "additionalProperties": true
+                      },
+                      "status": {
+                        "type": "boolean",
+                        "description": "Active status of the market"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Market not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/market/{id}": {
+      "get": {
+        "summary": "Show Market Details",
+        "operationId": "showMarket",
+        "tags": [
+          "Exchange",
+          "Markets"
+        ],
+        "description": "Retrieves details of a specific market by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the market to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Market details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the market",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "Primary currency of the market",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "pair": {
+                      "type": "string",
+                      "description": "Currency pair traded in this market",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "isTrending": {
+                      "type": "boolean",
+                      "description": "Indicator if the market is currently trending"
+                    },
+                    "isHot": {
+                      "type": "boolean",
+                      "description": "Indicator if the market is currently considered 'hot'"
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "description": "Additional metadata about the market",
+                      "additionalProperties": true
+                    },
+                    "status": {
+                      "type": "boolean",
+                      "description": "Active status of the market"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Market not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/order": {
+      "get": {
+        "summary": "List Orders",
+        "operationId": "listOrders",
+        "tags": [
+          "Exchange",
+          "Orders"
+        ],
+        "description": "Retrieves a list of orders for the authenticated user.",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Type of order to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "currency of the order to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pair",
+            "in": "query",
+            "description": "pair of the order to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the order",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "referenceId": {
+                        "type": "string",
+                        "description": "External reference ID for the order",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "userId": {
+                        "type": "string",
+                        "description": "User ID associated with the order",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "Status of the order (e.g., pending, completed)",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "symbol": {
+                        "type": "string",
+                        "description": "Trading symbol for the order",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Type of order (e.g., market, limit)",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "timeInForce": {
+                        "type": "string",
+                        "description": "Time in force policy for the order",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "side": {
+                        "type": "string",
+                        "description": "Order side (buy or sell)",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "price": {
+                        "type": "number",
+                        "description": "Price per unit",
+                        "nullable": false
+                      },
+                      "average": {
+                        "type": "number",
+                        "description": "Average price per unit",
+                        "nullable": false
+                      },
+                      "amount": {
+                        "type": "number",
+                        "description": "Total amount ordered",
+                        "nullable": false
+                      },
+                      "filled": {
+                        "type": "number",
+                        "description": "Amount filled",
+                        "nullable": false
+                      },
+                      "remaining": {
+                        "type": "number",
+                        "description": "Amount remaining",
+                        "nullable": false
+                      },
+                      "cost": {
+                        "type": "number",
+                        "description": "Total cost",
+                        "nullable": false
+                      },
+                      "trades": {
+                        "type": "object",
+                        "description": "Details of trades executed for this order",
+                        "additionalProperties": true
+                      },
+                      "fee": {
+                        "type": "number",
+                        "description": "Transaction fee",
+                        "nullable": false
+                      },
+                      "feeCurrency": {
+                        "type": "string",
+                        "description": "Currency of the transaction fee",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "description": "Creation date of the order",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "description": "Last update date of the order",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create Order",
+        "operationId": "createOrder",
+        "tags": [
+          "Exchange",
+          "Orders"
+        ],
+        "description": "Creates a new order for the authenticated user.",
+        "requestBody": {
+          "description": "Order creation data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "description": "Currency symbol (e.g., BTC)"
+                  },
+                  "pair": {
+                    "type": "string",
+                    "description": "Pair symbol (e.g., USDT)"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Order type (e.g., limit, market)"
+                  },
+                  "side": {
+                    "type": "string",
+                    "description": "Order side (buy or sell)"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "description": "Order amount"
+                  },
+                  "price": {
+                    "type": "number",
+                    "description": "Order price, required for limit orders"
+                  }
+                },
+                "required": [
+                  "currency",
+                  "pair",
+                  "type",
+                  "side",
+                  "amount"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Order created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Confirmation message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/exchange/order/{id}": {
+      "del": {
+        "summary": "Cancel Order",
+        "operationId": "cancelOrder",
+        "tags": [
+          "Exchange",
+          "Orders"
+        ],
+        "description": "Cancels a specific order for the authenticated user.",
+        "parameters": [
+          {
+            "index": 0,
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the order to cancel.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order canceled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Order canceled successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Show Order Details",
+        "operationId": "showOrder",
+        "tags": [
+          "Exchange",
+          "Orders"
+        ],
+        "description": "Retrieves details of a specific order by ID for the authenticated user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the order to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "referenceId": {
+                      "type": "string",
+                      "description": "External reference ID for the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "userId": {
+                      "type": "string",
+                      "description": "User ID associated with the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status of the order (e.g., pending, completed)",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "symbol": {
+                      "type": "string",
+                      "description": "Trading symbol for the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Type of order (e.g., market, limit)",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "timeInForce": {
+                      "type": "string",
+                      "description": "Time in force policy for the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "side": {
+                      "type": "string",
+                      "description": "Order side (buy or sell)",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "price": {
+                      "type": "number",
+                      "description": "Price per unit",
+                      "nullable": false
+                    },
+                    "average": {
+                      "type": "number",
+                      "description": "Average price per unit",
+                      "nullable": false
+                    },
+                    "amount": {
+                      "type": "number",
+                      "description": "Total amount ordered",
+                      "nullable": false
+                    },
+                    "filled": {
+                      "type": "number",
+                      "description": "Amount filled",
+                      "nullable": false
+                    },
+                    "remaining": {
+                      "type": "number",
+                      "description": "Amount remaining",
+                      "nullable": false
+                    },
+                    "cost": {
+                      "type": "number",
+                      "description": "Total cost",
+                      "nullable": false
+                    },
+                    "trades": {
+                      "type": "object",
+                      "description": "Details of trades executed for this order",
+                      "additionalProperties": true
+                    },
+                    "fee": {
+                      "type": "number",
+                      "description": "Transaction fee",
+                      "nullable": false
+                    },
+                    "feeCurrency": {
+                      "type": "string",
+                      "description": "Currency of the transaction fee",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "description": "Creation date of the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "description": "Last update date of the order",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/orderbook/{currency}/{pair}": {
+      "get": {
+        "summary": "Get Market Order Book",
+        "operationId": "getMarketOrderBook",
+        "tags": [
+          "Exchange",
+          "Markets"
+        ],
+        "description": "Retrieves the order book for a specific market pair.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "path",
+            "description": "Currency symbol",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pair",
+            "in": "path",
+            "description": "Pair symbol",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Limit the number of order book entries",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order book information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "asks": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "description": "Order book entry consisting of price and volume"
+                        }
+                      },
+                      "description": "Asks are sell orders in the order book"
+                    },
+                    "bids": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "description": "Order book entry consisting of price and volume"
+                        }
+                      },
+                      "description": "Bids are buy orders in the order book"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Orderbook not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/ticker": {
+      "get": {
+        "summary": "Get All Market Tickers",
+        "operationId": "getAllMarketTickers",
+        "tags": [
+          "Exchange",
+          "Markets"
+        ],
+        "description": "Retrieves ticker information for all available market pairs.",
+        "responses": {
+          "200": {
+            "description": "All market tickers information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "symbol": {
+                      "type": "string",
+                      "description": "Trading symbol for the market pair",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "bid": {
+                      "type": "number",
+                      "description": "Current highest bid price",
+                      "nullable": false
+                    },
+                    "ask": {
+                      "type": "number",
+                      "description": "Current lowest ask price",
+                      "nullable": false
+                    },
+                    "close": {
+                      "type": "number",
+                      "description": "Last close price",
+                      "nullable": false
+                    },
+                    "last": {
+                      "type": "number",
+                      "description": "Most recent transaction price",
+                      "nullable": false
+                    },
+                    "change": {
+                      "type": "number",
+                      "description": "Price change percentage",
+                      "nullable": false
+                    },
+                    "baseVolume": {
+                      "type": "number",
+                      "description": "Volume of base currency traded",
+                      "nullable": false
+                    },
+                    "quoteVolume": {
+                      "type": "number",
+                      "description": "Volume of quote currency traded",
+                      "nullable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ticker not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/ticker/{currency}/{pair}": {
+      "get": {
+        "summary": "Get Market Ticker",
+        "operationId": "getMarketTicker",
+        "tags": [
+          "Exchange",
+          "Markets"
+        ],
+        "description": "Retrieves ticker information for a specific market pair.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "path",
+            "required": true,
+            "description": "The base currency of the market pair.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pair",
+            "in": "path",
+            "required": true,
+            "description": "The quote currency of the market pair.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticker information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "symbol": {
+                      "type": "string",
+                      "description": "Trading symbol for the market pair",
+                      "maxLength": 255,
+                      "minLength": 0,
+                      "nullable": false
+                    },
+                    "bid": {
+                      "type": "number",
+                      "description": "Current highest bid price",
+                      "nullable": false
+                    },
+                    "ask": {
+                      "type": "number",
+                      "description": "Current lowest ask price",
+                      "nullable": false
+                    },
+                    "close": {
+                      "type": "number",
+                      "description": "Last close price",
+                      "nullable": false
+                    },
+                    "last": {
+                      "type": "number",
+                      "description": "Most recent transaction price",
+                      "nullable": false
+                    },
+                    "change": {
+                      "type": "number",
+                      "description": "Price change percentage",
+                      "nullable": false
+                    },
+                    "baseVolume": {
+                      "type": "number",
+                      "description": "Volume of base currency traded",
+                      "nullable": false
+                    },
+                    "quoteVolume": {
+                      "type": "number",
+                      "description": "Volume of quote currency traded",
+                      "nullable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ticker not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/exchange/watchlist": {
+      "del": {
+        "summary": "Remove Item from Watchlist",
+        "operationId": "removeWatchlistItem",
+        "tags": [
+          "Exchange",
+          "Watchlist"
+        ],
+        "description": "Removes an item from the watchlist for the authenticated user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID of the watchlist item to remove.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Watchlist deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Confirmation message indicating successful deletion"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Watchlist not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "List Watchlist Items",
+        "operationId": "listWatchlistItems",
+        "tags": [
+          "Exchange",
+          "Watchlist"
+        ],
+        "description": "Retrieves a list of watchlist items for the authenticated user.",
+        "responses": {
+          "200": {
+            "description": "A list of watchlist items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the watchlist item",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false,
+                        "x-expectedFormat": "uuid"
+                      },
+                      "userId": {
+                        "type": "string",
+                        "description": "User ID associated with the watchlist item",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false,
+                        "x-expectedFormat": "uuid"
+                      },
+                      "symbol": {
+                        "type": "string",
+                        "description": "Symbol of the watchlist item",
+                        "maxLength": 255,
+                        "minLength": 0,
+                        "nullable": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Watchlist not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Add Item to Watchlist",
+        "operationId": "addWatchlistItem",
+        "tags": [
+          "Exchange",
+          "Watchlist"
+        ],
+        "description": "Adds a new item to the watchlist for the authenticated user.",
+        "requestBody": {
+          "description": "Data for the watchlist item to add.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "symbol": {
+                    "type": "string",
+                    "description": "Symbol of the watchlist item"
+                  }
+                },
+                "required": [
+                  "symbol"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Watchlist created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Confirmation message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, admin permission required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requiresAuth": true,
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "parameters": {},
+    "requestBodies": {},
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
+    }
+  },
+  "tags": []
+}

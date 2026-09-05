@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>%SUBJECT%</title>
+<!--
+  Bidex transactional email.
+
+  Table layout with inline styles throughout, because that is what actually
+  survives Outlook, Gmail's clipping and the long tail of mobile clients — a
+  modern stylesheet here would render as unstyled text for a large share of
+  recipients, and the recipients who most need these emails to be legible are
+  the ones being asked to act on a security code or a payment.
+
+  The palette is the platform's own (globals.css) resolved to hex, since email
+  cannot read CSS custom properties. Dark mode is offered where supported and
+  degrades to the light palette everywhere else.
+-->
+<style>
+  /* Honoured by Apple Mail and iOS; ignored elsewhere, which is why every
+     colour below is also set inline. */
+  @media (prefers-color-scheme: dark) {
+    .bx-body   { background:#09090b !important; }
+    .bx-card   { background:#18181b !important; border-color:#27272a !important; }
+    .bx-text   { color:#fafafa !important; }
+    .bx-muted  { color:#a1a1aa !important; }
+    .bx-rule   { border-color:#27272a !important; }
+    .bx-panel  { background:#27272a !important; }
+  }
+  @media only screen and (max-width:600px) {
+    .bx-pad { padding-left:24px !important; padding-right:24px !important; }
+    .bx-h1  { font-size:20px !important; }
+  }
+  a { text-decoration:none; }
+</style>
+</head>
+
+<body class="bx-body" style="margin:0; padding:0; background:#f4f5f7; -webkit-font-smoothing:antialiased;">
+
+  <!-- Preheader: the grey line beside the subject in an inbox list. Left blank
+       and hidden, so a client does not scrape the first words of the body
+       (usually "Hi there") and show them as a summary. -->
+  <div style="display:none; font-size:1px; color:#f4f5f7; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">&nbsp;</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bx-body" style="background:#f4f5f7;">
+    <tr>
+      <td align="center" style="padding:32px 12px;">
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px; width:100%;">
+
+          <!-- Wordmark: the mark as an image, the name as live text.
+
+               Deliberately not the full lockup artwork. Most clients block
+               remote images until the reader allows them, so a masthead that
+               is entirely one image arrives as an empty box on first open —
+               on exactly the messages (a login code, a payment) where the
+               reader is deciding whether this is genuine. The name is text, so
+               it always renders; the mark is a bonus once images load, and its
+               alt text says the brand until then.
+
+               The mark and not the lockup for a second reason: the lockup sets
+               BIDEX in near-black, which vanishes when a client flips the sheet
+               to dark. The gem is blue and legible either way, and the name
+               beside it recolours with .bx-text. -->
+          <tr>
+            <td align="left" style="padding:0 0 20px 4px;">
+              <a href="%SITE_URL%" style="text-decoration:none;">
+                <img src="%SITE_URL%/img/logo/logo.png" width="30" height="26" alt="%SITE_NAME%"
+                     style="border:0; outline:none; vertical-align:middle; margin-right:9px;" />
+                <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:19px; font-weight:700; letter-spacing:-0.4px; color:#18181b; vertical-align:middle;" class="bx-text">%SITE_NAME%</span>
+              </a>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td class="bx-card" style="background:#ffffff; border:1px solid #e4e4e7; border-radius:14px; overflow:hidden;">
+
+              <!-- A single accent rule rather than a coloured masthead. A block
+                   of brand colour at the top of a security email is what most
+                   phishing templates look like; a restrained sheet reads as a
+                   record, which is what these are. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="height:3px; background:#2563eb; font-size:0; line-height:0;">&nbsp;</td></tr>
+              </table>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="bx-pad" style="padding:32px 36px 8px 36px;">
+                    <h1 class="bx-h1 bx-text" style="margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:22px; line-height:1.3; font-weight:650; letter-spacing:-0.3px; color:#18181b;">%HEADER%</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="bx-pad bx-text" style="padding:12px 36px 32px 36px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:1.65; color:#3f3f46;">
+                    %MESSAGE%
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td class="bx-pad" style="padding:20px 8px 0 8px;">
+              <p class="bx-muted" style="margin:0 0 10px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; line-height:1.6; color:#71717a;">
+                %FOOTER%
+              </p>
+
+              <!-- Said on every email, because someone who did not expect this
+                   one needs to know what to do about it, and that instruction
+                   is worthless if it only appears on the emails they read. -->
+              <p class="bx-muted" style="margin:0 0 14px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; line-height:1.6; color:#71717a;">
+                We will never ask you for your password, a login code, or your recovery phrase by
+                email or on the phone. If you did not expect this message, do not act on it and
+                change your password.
+              </p>
+
+              <p class="bx-muted" style="margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:11px; line-height:1.6; color:#a1a1aa;">
+                <a href="%SITE_URL%" style="color:#71717a;">%SITE_NAME%</a>
+                &nbsp;·&nbsp;
+                <a href="%UNSUBSCRIBE_URL%" style="color:#a1a1aa;">Notification settings</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

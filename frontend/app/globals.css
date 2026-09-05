@@ -1,0 +1,1480 @@
+/* Inter was loaded here for the chart engine's canvas text. The chart now asks
+   for system-ui instead — an unhinted webfont is exactly what renders soft at
+   the 9-12px sizes the axis labels use on a 1x display — so the download would
+   be dead weight. */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@plugin 'tailwindcss-animate';
+
+/* Import the variables CSS file */
+@import "../styles/variables.css";
+
+@custom-variant dark (&:is(.dark *, .navy *));
+/* Navy is a dark theme — the variant above deliberately matches it — but it is
+   also its own palette, and a handful of the terminal's surfaces are picked by
+   hand rather than from tokens (see the positions card in order-panel). Without
+   a variant those had to be chosen in JS with an `isNavy` ternary, which is why
+   the same surface is spelled three different ways in three components. */
+@custom-variant navy (&:is(.navy *));
+
+/* Override WebKit input autofill background to preserve crisp white input backgrounds */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #18181b !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Onest, self-hosted. Replaces SF Pro as the interface face.
+
+   SF Pro could never be more than a macOS-only answer: Apple licenses it for
+   Apple platforms, so Windows fell through to Segoe UI and the two machines
+   never matched. Onest is metrically the closest open-licensed face to SF Pro
+   measured against the real files — cap height 0.707 against SF Pro's 0.705, a
+   0.3% difference — so it drops into the existing layout without reflowing it,
+   and now every device renders identically.
+
+   Served from /public rather than next/font because the chart engine writes
+   canvas font strings, and canvas needs a literal family name — next/font emits
+   a build-hashed one that minified engine code cannot reference. */
+@font-face {
+  font-family: "Onest";
+  src: url("/fonts/onest-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Onest has 470 glyphs and 28 of the characters this interface puts on screen
+   are not among them — ₹ above all, but also ₮ ₿ ₺ ₦ ₫, the ▲▼ price arrows, ∞,
+   and the ⌘⇧⌥↵⌫ set the shortcuts panel draws.
+
+   A missing glyph is silent: the browser fetches that one character from the
+   next font in the stack, so ₹ would come from Segoe UI on Windows and SF Pro
+   on macOS while the digits beside it stayed Onest — mismatched, and mismatched
+   differently per platform, on a screen where every figure starts with ₹.
+
+   So those 28 characters are supplied explicitly from Inter, which has them,
+   scoped by unicode-range to exactly that set — the two files share no glyphs.
+   size-adjust reconciles the two faces: Inter's cap height is 0.728 against
+   Onest's 0.707, so 97% brings them to the same optical height and the join
+   stops being visible. */
+@font-face {
+  font-family: "Onest";
+  src: url("/fonts/inter-fill.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 97%;
+  unicode-range: U+20B9, U+221E, U+20AE, U+2011, U+20BF, U+25BC, U+25CB, U+25B2,
+    U+20BA, U+20A6, U+20AB, U+02BB, U+2010, U+2318, U+25CF, U+27F7, U+0259,
+    U+21E7, U+2303, U+2325, U+21B5, U+232B, U+238B, U+21E5, U+21EA, U+21DE,
+    U+21DF, U+2423;
+}
+
+@theme {
+  /* Onest first, then the platform faces as fallback for the moment before the
+     file lands and for scripts Onest does not cover (the Arabic and Cyrillic
+     locales fall through here, as they always have). */
+  --font-sans: "Onest", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-field: hsl(var(--field));
+  --color-field-border: hsl(var(--field-border));
+
+  /* Two status hues that are read rather than looked at.
+
+     `--success` and `--warning` above are the trading palette: a filled green
+     for a winning position, a saturated amber for a countdown. They are meant
+     to be seen from across a desk, and every account screen that borrowed them
+     ended up shouting a state — "Verified", "Active now" — that is almost
+     always ordinary news. At 71% saturation on a near-black ground that green
+     reads as a highlighter rather than a word.
+
+     These two are the settings-page pair: the same meanings, at the saturation
+     a printed document would use. They are only ever text and hairline rules,
+     never a fill, so they never have to survive being a background. */
+  --color-verified: hsl(var(--verified));
+  --color-attention: hsl(var(--attention));
+
+  /* Danger, in two strengths, because one value cannot do both jobs.
+
+     `--destructive` is a single hue used as text, as a hairline, and as a
+     10%-opacity fill all at once, and that is why every warning on these pages
+     glowed: a red faint enough to sit behind text has to be saturated enough
+     to survive being diluted to a tenth, and that same red as 12px type reads
+     as a lit filament rather than as ink.
+
+     So: `--danger` is the ink — what a word, a rule or a glyph is drawn in,
+     never a fill. `--danger-solid` is the one filled button an irreversible
+     action gets, mixed darker so white sits on it legibly. */
+  --color-danger: hsl(var(--danger));
+  --color-danger-solid: hsl(var(--danger-solid));
+
+  /* The same two-strength split, for the other two outcome colours.
+
+     `--verified` and `--attention` are mixed as ink — dark enough to be read
+     as text on white, which on the dark themes means light enough to be read
+     on near-black, and a mid-tone green at 55% lightness cannot hold white
+     text on top of it. The ledger's status pills are filled, so they need the
+     background-strength versions: same hues, mixed so white sits on them. */
+  --color-verified-solid: hsl(var(--verified-solid));
+  --color-attention-solid: hsl(var(--attention-solid));
+
+  /* The Bidex blue, as a fill.
+
+     `--primary` cannot do this job: it is shadcn's neutral, and in the dark
+     theme it is *white*, so every "primary" button on a dark page is a white
+     slab. That is correct for a neutral system and wrong for a product whose
+     logo is blue — it left the safe, ordinary action on a settings card
+     looking like an empty outline while the only coloured control on the
+     screen was the one that deletes the account.
+
+     So: one blue, the logo's, at a lightness white type survives on, the same
+     in all three themes because a brand colour that shifts per theme is not a
+     brand colour. Fills and their text only — never a hairline, never a wash. */
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@layer base {
+  :root {
+    /* The elevation ramp: page, then panel, then the thing floating over both.
+
+       These three were one colour — three identical whites here, three
+       identical near-blacks in `.dark` — so `bg-card` on a `bg-background`
+       page painted nothing, and every panel in the app was a 1px border drawn
+       around a void. The account screens are where it showed worst: the KYC
+       card, the security cards and the four transaction tiles all dissolved
+       into one rectangle. Navy was the only theme that ever had a real ramp,
+       and it is the one both other blocks are now modelled on.
+
+       Moving the *page* rather than the cards is deliberate. A grey card on a
+       white page reads as disabled; a white card on a faintly grey page reads
+       as raised, which is what a card is. 220 20% is the hue `--field` already
+       uses, so the greys in this theme stay one family rather than two. */
+    --background: 220 20% 97%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    /* Deliberately level with `--card`, unlike the two dark themes, which each
+       lift the popover ~2.2 L* above theirs. Lightness is capped at white
+       here, so there is nowhere above a card to go — and nowhere it needs to
+       go: in a light theme a drop shadow is dark on light and reads plainly,
+       which is exactly what fails on a near-black ground and is why the other
+       two themes have to spend lightness on it. */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    /* 96.1% before, which was a 3.9pp step under a white page and would now be
+       0.9pp under a 97% one — a card header and a hover state that vanish.
+       These fills are drawn both on cards (white) and on the page, so they sit
+       below both: 5.5pp under a card, 2.5pp under the page. */
+    --secondary: 214 24% 94.5%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 214 24% 94.5%;
+    /* 46.9% before, which is shadcn's default and is a grey chosen against
+       pure white for 16px body text. Nothing in this app is either: the
+       secondary line under a card title is 12px, a field label is 11px and
+       uppercase, and both are read against a 97% page rather than white — so
+       the same value that measures as "accessible" arrives on screen as a
+       tint. 38% clears 7:1 on the card and still sits clearly below the
+       near-black `--foreground`, which is the job: quieter than the heading,
+       not fainter than the surface. The dark themes had this exact correction
+       applied to them already; light was left behind. */
+    --muted-foreground: 215 20% 38%;
+    --accent: 214 24% 94.5%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+    /* Darkened from 91.4%, for the same reason `.dark`'s border was lightened:
+       it now has to separate surfaces closer together than they used to be — a
+       94.5% fill against a 97% page — as well as edge a white card. */
+    --border: 214 22% 88%;
+    --input: 214 22% 88%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    --chart-bg: #fafafa;
+
+    /* Input surfaces, defined per theme because nothing existing could carry
+       them: `--card` used to be byte-identical to `--background` in light and
+       dark (it no longer is — see the ramp above), and `--muted` at 40% over
+       the page is within a couple of values of the page itself. The auth
+       fields used both and disappeared into the background in every theme — a
+       form you have to hunt for.
+
+       These are a real step away from the page in each theme, with a border
+       strong enough to read as an edge rather than a smudge.
+
+       96.5% before. The auth forms draw these straight onto `--background`,
+       which has moved off pure white, so the field moves with it to keep the
+       3pp gap it was given. On a card it is a 6pp step. */
+    --field: 220 20% 94%;
+    --field-border: 220 14% 84%;
+
+    /* Ink, not neon. A forest green and a burnt amber, both dark enough to be
+       read as text on white without a fill behind them. */
+    --verified: 152 46% 30%;
+    --attention: 32 68% 37%;
+    --danger: 358 60% 40%;
+    --danger-solid: 358 58% 44%;
+    --verified-solid: 152 46% 32%;
+    --attention-solid: 32 66% 35%;
+    --brand: 221 83% 53%;
+    --brand-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    /* The elevation ramp — see the note in `:root`. The page stays at 3.9%
+       because it is the ground the chart and the terminal are drawn against,
+       and that was never the part that was wrong; what was missing is
+       everything stacked on top of it. */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 8% 8%;
+    --card-foreground: 0 0% 98%;
+    /* Above the card, not level with it. A menu opened over a panel has to be
+       legible as a separate object without leaning on its shadow, and a shadow
+       is very close to invisible on a near-black ground. */
+    --popover: 240 8% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    /* 64.9% before. Every secondary line in the app is this colour, and on a
+       1x Windows panel — where a stem lands on one pixel with nothing to spare
+       — a 12px line at 64.9% on a 3.9% ground is the single most common
+       complaint about this interface being hard to read. 71% is still clearly
+       secondary against the 98% foreground and clears 7:1 against the page. */
+    --muted-foreground: 240 5% 71%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    /* A border has to be lighter than the lightest fill it is ever drawn
+       around, and at 15.9% this one was *exactly* `--muted`, `--secondary` and
+       `--accent`. Anything with a muted fill — an outlined button, a chip, a
+       card header — had an edge the same colour as its middle, so the shape
+       had no outline at all. 21% clears every fill in this theme and still
+       reads as a hairline rather than as a rule. */
+    --border: 240 5% 21%;
+    --input: 240 5% 21%;
+    --ring: 240 4.9% 83.9%;
+    /* Raised with the card. A field is read against whatever it sits on, and
+       it now usually sits on a card at 8% rather than on the page at 3.9%; at
+       the old 10.5% that is a 2.5pp step, which is no step. */
+    --field: 240 6% 13%;
+    --field-border: 240 5% 24%;
+
+    /* Lifted for the dark ground and pulled well back in saturation: 38% where
+       the trading green is 71%. It still reads unambiguously green next to
+       grey, and it stops reading as a highlighter. */
+    --verified: 148 38% 55%;
+    --attention: 36 52% 58%;
+    /* A brick red, not a warning light. 54% saturation where the trading
+       palette's red is 85 — this one is read, not spotted. */
+    --danger: 4 54% 62%;
+    --danger-solid: 358 52% 46%;
+    --verified-solid: 150 40% 36%;
+    --attention-solid: 33 60% 37%;
+    --brand: 221 83% 53%;
+    --brand-foreground: 0 0% 100%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --chart-bg: #09090b;
+  }
+
+  .navy {
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    /* 10% before, i.e. *below* the 11% card it opens over — a menu that sank
+       into the panel instead of floating above it. */
+    --popover: 222 47% 13%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222 47% 8%;
+    /* 14% before — only 3.2 L* above this theme's card, where `.dark` puts the
+       same fills 9.7 above its own. A `bg-muted/30` card header and a hover
+       state were therefore visible in dark and flat in navy, from identical
+       markup. 17% brings the step to 6.4: gentler than dark, because the blue
+       is doing some of the separating here, but no longer nothing. */
+    --secondary: 222 47% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 47% 17%;
+    --muted-foreground: 215 20.2% 71%;
+    --accent: 222 47% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    /* Lifted for the same reason as `.dark`'s: clear of the fills above, so a
+       bordered control keeps an outline. Navy already had a surface ramp; it
+       is the edges that were thin. 7.0 L* over `--muted`, against 5.6 in dark
+       and 6.1 in light. */
+    --border: 222 47% 24%;
+    --input: 222 47% 24%;
+    /* Was 222 47% 25% — one point off the border it is meant to stand out
+       from, on a card at 11%. A focus ring that cannot be told from an idle
+       border is not a focus ring, and it was the only one of the three themes
+       drawing it as a dark grey: light uses its primary blue, dark a near
+       white. Navy takes the primary blue, like light. */
+    --ring: 217.2 91.2% 59.8%;
+    --field: 222 45% 14.5%;
+    --field-border: 222 38% 27%;
+    --verified: 150 34% 57%;
+    --attention: 36 48% 60%;
+    --danger: 4 50% 63%;
+    --danger-solid: 358 50% 47%;
+    --verified-solid: 150 38% 37%;
+    --attention-solid: 33 58% 38%;
+    --brand: 221 83% 53%;
+    --brand-foreground: 0 0% 100%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --chart-bg: #0b111e;
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+  
+  body, html, input, button, select, textarea, h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans) !important;
+  }
+
+  /* Display numerals for the trading figures — stake, expiry, price. The same
+     face as the rest of the interface, with tabular figures locked on so equal
+     width digits keep the value from shifting sideways as it changes. Space
+     Grotesk and Geist Mono were both tried here and are too characterful for a
+     number that should read instantly and without style.
+
+     Now the system font rather than DM Sans: these are the figures that most
+     need to be legible at a glance, and a webfont is exactly where Windows
+     rendering falls down. Segoe UI and SF Pro both carry tabular figures, so
+     the digit alignment below is unaffected.
+
+     This has to sit in the base layer next to the rule above, not in a utility
+     class: that rule is !important on `input`, and !important declarations reverse
+     cascade-layer order, so a utilities-layer override would lose to it. Same
+     layer, higher specificity — this wins. */
+  .font-numeric,
+  input.font-numeric {
+    font-family: var(--font-sans) !important;
+    font-variant-numeric: tabular-nums lining;
+  }
+
+  /* THE reason text looked soft on Windows.
+
+     `<body>` carried Tailwind's `antialiased` utility, which is
+     `-webkit-font-smoothing: antialiased`. Chromium honours that on Windows as
+     well as macOS, and it means: render glyphs with grayscale antialiasing.
+     That switches ClearType — subpixel antialiasing — off for the entire site.
+
+     ClearType lights the individual red/green/blue stripes of an LCD pixel
+     separately, so it addresses three times the horizontal detail a grayscale
+     rasteriser can. On a 27" 1080p panel (~81 PPI) that is the difference
+     between sharp text and soft text, because at that pixel density a stem is
+     barely one pixel wide and has nowhere to land. It is also why the problem
+     was invisible on a Retina MacBook: at 2x there are pixels to spare, and
+     macOS has not done subpixel antialiasing since Mojave regardless.
+
+     So the earlier webfont-to-system-font change could not have helped — no
+     font renders sharply through a rasteriser that has been downgraded. Every
+     other site that looked crisp on that same monitor was simply not setting
+     this property. `auto` hands the decision back to the platform, which is
+     ClearType on Windows.
+
+     macOS keeps `antialiased` via the attribute below, so the MacBook renders
+     byte-identically to what it does today. Nothing about the display the user
+     is happy with changes. */
+  body {
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+  }
+
+  html[data-platform="apple"] body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* The page renders at its true size.
+
+     `zoom: 0.95` scaled every length by 0.95, which on a 1x display leaves
+     nothing on a whole pixel: an 11px label rasterised at 10.45px, a 1px border
+     drawn as a 0.95px smear of partial coverage rather than one crisp line.
+     None of it shows on a 2x Retina panel, where the halves still land on real
+     device pixels — which is exactly why the Mac looked right and Windows did
+     not, at identical resolution and 100% scaling.
+
+     The 105.26316vw/vh figures paired with it were 100/0.95: the counter-scale
+     needed to refill a viewport the zoom had shrunk. With the zoom gone they
+     are just an element 5% wider than the screen, so they go back to 100.
+
+     The zoom was there to fit the layout, so removing it costs about 5% of the
+     working area. The two full-height columns absorb that: the order panel is a
+     flex column whose positions list scrolls, and the left toolbar now scrolls
+     too rather than clipping its lower icons the way it did last time. */
+  body {
+    @apply bg-background text-foreground;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  html {
+    @apply scroll-smooth bg-background;
+    overflow-x: hidden;
+  }
+
+  html.terminal-active,
+  body.terminal-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+
+  /* The terminal runs at 95% of the app's base scale.
+
+     Judged side by side against the same screen at full size: the asset row
+     gains an instrument, the price axis carries more levels, and nothing has to
+     be scrolled to be read. That density is what a trading screen wants.
+
+     Done by root font size rather than `zoom`, and the difference matters. Zoom
+     scales the rendered result: an 11px label becomes 10.45px of resampled
+     glyph, a 1px border becomes 0.95px of grey. Worse here, the chart builds
+     its canvas from window.devicePixelRatio, which zoom does not change — so
+     the chart is drawn at full size and squashed to fit, leaving soft candles
+     and soft axis numbers on the one surface that has to stay sharp. This makes
+     the sizes genuinely smaller instead, so everything is laid out and
+     rasterised at its final size and stays crisp. It is also the mechanism that
+     cost us the missing time axis: zoom needs counter-scaling at every vh and
+     every getBoundingClientRect, and each one is a place to forget.
+
+     Two halves have to move together. Anything on the rem scale — text-sm, p-4,
+     gap-3 — follows this line. Anything written as a literal pixel value does
+     not, and the terminal has hundreds of those; they were rescaled with it.
+     Move one without the other and the interface comes apart at the seams.
+
+     At this ratio a 10px label stays 10px, because 5% of it is half a pixel and
+     there is nowhere for it to go. The scale reads as a consistent tightening
+     even though the smallest sizes hold still.
+
+     Scoped to .terminal-active, which the terminal page sets on <html>, because
+     rem resolves against the root and nothing narrower can move it. Admin,
+     dashboard and marketing pages keep the 16px base. */
+  html.terminal-active {
+    font-size: 15.2px; /* 16 * 0.95 */
+  }
+  .avatarGroup > span {
+    @apply hover:-translate-y-1 hover:relative hover:z-10 transition-transform;
+  }
+
+  /* Historical name, kept because it is applied across eight components: the
+     amount and expiry fields, the header account control, the analytics and
+     journal panels, the chart's pair badge. It used to pin those to SF Pro with
+     !important, which would have held the most-looked-at numbers on the screen —
+     ₹1,000 and the expiry clock — on the old face while everything around them
+     moved to Onest.
+
+     It now defers to the same variable as the rest of the interface, so it
+     contributes only the tighter tracking it was really there for. That -0.015em
+     was tuned against SF Pro; Onest sets slightly wider, so if these areas read
+     cramped this is the number to revisit. */
+  .sf-pro-selectors,
+  .sf-pro-selectors input,
+  .sf-pro-selectors button,
+  .sf-pro-selectors span,
+  .sf-pro-selectors div,
+  .sf-pro-selectors p,
+  .sf-pro-selectors h1,
+  .sf-pro-selectors h2,
+  .sf-pro-selectors h3,
+  .sf-pro-selectors h4,
+  .sf-pro-selectors h5,
+  .sf-pro-selectors h6,
+  .sf-pro-selectors table,
+  .sf-pro-selectors th,
+  .sf-pro-selectors td,
+  .sf-pro-selectors tr,
+  .sf-pro-selectors label,
+  .sf-pro-selectors select,
+  .sf-pro-selectors option,
+  .sf-pro-selectors a {
+    font-family: var(--font-sans) !important;
+    letter-spacing: -0.015em !important;
+  }
+}
+
+/* Utility: Container */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (min-width: 640px) {
+    max-width: 640px;
+  }
+  @media (min-width: 768px) {
+    max-width: 768px;
+  }
+  @media (min-width: 1024px) {
+    max-width: 1024px;
+  }
+  @media (min-width: 1280px) {
+    max-width: 1280px;
+  }
+  @media (min-width: 1392px) {
+    max-width: 1392px;
+  }
+}
+
+/* Mobile viewport and safe area utilities */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@utility pb-safe-or-2 {
+  padding-bottom: max(env(safe-area-inset-bottom, 0), 0.5rem);
+}
+
+/* These divided by 0.95 to undo the page zoom. With the zoom gone a screen is
+   simply a screen, and dividing would now overshoot the viewport by 5%. */
+@utility w-screen {
+  width: 100vw;
+}
+@utility h-screen {
+  height: 100vh;
+}
+@utility min-h-screen {
+  min-height: 100vh;
+}
+@utility max-h-screen {
+  max-height: 100vh;
+}
+
+@utility h-screen-safe {
+  height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
+
+@utility min-h-screen-safe {
+  min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
+
+/* Mobile viewport height using CSS custom property. The fallback is 1vh per
+   unit now, not 1.0526316 — it is only used before the JS in the terminal page
+   measures the real visible height. */
+@utility h-screen-mobile {
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+@utility min-h-screen-mobile {
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+@keyframes slideDownAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slideLeftAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes slideUpAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slideRightAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Import all modular CSS files */
+@import "../styles/animations.css";
+@import "../styles/chart.css";
+@import "../styles/panels.css";
+@import "../styles/trading.css";
+@import "../styles/mobile.css";
+@import "../styles/theme.css";
+@import "../styles/utilities.css";
+@import "../styles/builder.css";
+
+/* Sticky header background */
+.has-sticky-header::after {
+  position: absolute;
+  z-index: -10;
+  --tw-backdrop-blur: blur(12px);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness)
+    var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale)
+    var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert)
+    var(--tw-backdrop-opacity) var(--tw-backdrop-saturate)
+    var(--tw-backdrop-sepia);
+  content: "";
+  background: linear-gradient(
+    180deg,
+    rgba(var(--v-theme-background), 70%) 44%,
+    rgba(var(--v-theme-background), 43%) 73%,
+    rgba(var(--v-theme-background), 0%)
+  );
+  background-repeat: repeat;
+  block-size: 5.5rem;
+  inset-block-start: -1.5rem;
+  inset-inline: 0;
+  -webkit-mask: linear-gradient(black, black 18%, transparent 100%);
+  mask: linear-gradient(black, black 18%, transparent 100%);
+}
+
+/* Collapsible content animations */
+.CollapsibleContent {
+  overflow: hidden;
+}
+.CollapsibleContent[data-state="open"] {
+  animation: slideDown 300ms ease-out;
+}
+.CollapsibleContent[data-state="closed"] {
+  animation: slideUp 300ms ease-out;
+}
+
+/* Input group styling */
+.input-group :not(:first-child) input {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+.input-group.merged :not(:first-child) input {
+  border-left-width: 0 !important;
+  padding-left: 0 !important;
+}
+.input-group :not(:last-child) input {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.input-group.merged :not(:last-child) input {
+  border-right-width: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* CKEditor adjustments */
+.ck .ck-editor__editable {
+  min-height: 245px !important;
+}
+
+/* Authentication page styles */
+.loginwrapper {
+  min-height: calc(var(--vh, 1vh) * 100);
+  flex-basis: 100%;
+}
+.loginwrapper .lg-inner-column {
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Progress bar animation */
+@keyframes progress-bar-stripes {
+  0% {
+    background-position: 1rem 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+@keyframes slideDown {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+@keyframes slideUp {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+.animate-stripes {
+  animation: progress-bar-stripes 1s linear infinite;
+}
+
+/* Background blob animations - CPU efficient CSS animations */
+@keyframes blob-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.1);
+  }
+}
+@keyframes blob-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-40px, 30px) scale(1.2);
+  }
+}
+@keyframes blob-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, -40px) scale(1.15);
+  }
+}
+@keyframes blob-4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-30px, 20px) scale(1.1);
+  }
+}
+.animate-blob-1 {
+  animation: blob-1 20s ease-in-out infinite;
+}
+.animate-blob-2 {
+  animation: blob-2 25s ease-in-out infinite;
+  animation-delay: 5s;
+}
+.animate-blob-3 {
+  animation: blob-3 30s ease-in-out infinite;
+  animation-delay: 10s;
+}
+.animate-blob-4 {
+  animation: blob-4 22s ease-in-out infinite;
+  animation-delay: 7s;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-1,
+  .animate-blob-2,
+  .animate-blob-3,
+  .animate-blob-4 {
+    animation: none;
+  }
+}
+
+/* Page minimum height adjustments */
+.page-min-height {
+  min-height: calc(var(--vh, 1vh) * 100 - 117px);
+}
+.page-min-height-semibox {
+  min-height: calc(var(--vh, 1vh) * 100 - 200px);
+}
+.page-min-height-horizontal {
+  min-height: calc(var(--vh, 1vh) * 100 - 170px);
+}
+
+/* App height utility */
+.app-height {
+  height: calc(var(--vh, 1vh) * 100 - 11.1rem) !important;
+}
+@media (max-width: 768px) {
+  .app-height {
+    height: calc(var(--vh, 1vh) * 100 - 10.5rem) !important;
+  }
+}
+
+/* Semibox content wrapper adjustments */
+@media (min-width: 1280px) {
+  .semibox-content-wrapper {
+    margin-left: 56px;
+    margin-right: 56px;
+  }
+}
+
+/* Layout padding for bottom spacing */
+.layout-padding {
+  padding-bottom: 112px;
+}
+@media (min-width: 768px) {
+  .layout-padding {
+    padding-bottom: 37px;
+  }
+}
+
+/* Scrollbar styles */
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+/* RTL adjustments for react-select */
+html[dir="rtl"] .react-select .select__loading-indicator {
+  flex-direction: row-reverse;
+}
+
+/* Medium image zoom overlay */
+.react-medium-image-zoom-overlay {
+  z-index: 1000;
+}
+.react-medium-image-zoom-zoom-image {
+  cursor: zoom-out;
+}
+
+/* Thin scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin; /* Firefox */
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 0.375rem;
+  height: 0.375rem;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* Documentation section hover effects */
+.documentation-section {
+  @apply transition-all duration-300 ease-in-out;
+}
+.documentation-section:hover {
+  @apply bg-accent/10;
+}
+.documentation-subsection {
+  @apply transition-all duration-300 ease-in-out;
+}
+.documentation-subsection:hover {
+  @apply bg-accent/5;
+}
+
+/* Base scrollbar styles for light mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: transparent;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-track {
+  background-color: #f4f4f5;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #d4d4d8;
+  border: 2px solid #f4f4f5;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a1a1aa;
+}
+
+/* Dark mode scrollbar adjustments */
+.dark ::-webkit-scrollbar,
+.navy ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: hsl(var(--card));
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-track,
+.navy ::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb,
+.navy ::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border: 2px solid hsl(var(--background));
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb:hover,
+.navy ::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted));
+}
+
+/* Old React Quill editor styles - deprecated, kept for reference only */
+/* These styles are no longer needed as we now use WysiwygEditor */
+/* .quillEditor .ql-toolbar.ql-snow,
+.quillEditor .ql-container.ql-snow {
+  border: none !important;
+  border-radius: 0 !important;
+} */
+
+.bg-grid-white {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+}
+
+/* Support Drawer Styles */
+.support-drawer-content {
+  width: 90vw !important;
+  max-width: 90vw !important;
+  min-width: 90vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+/* Target the Sheet component by data attribute */
+[data-sheet="true"] .support-drawer-content {
+  width: 90vw !important;
+  max-width: 90vw !important;
+  min-width: 90vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+/* Ensure the Sheet overlay and content take full height */
+[data-radix-dialog-overlay] {
+  height: 100vh !important;
+}
+
+[data-radix-dialog-content].support-drawer-content {
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+/* Unauthorized Access Page Styles */
+.unauthorized-access-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: hsl(var(--background));
+}
+
+/* Reown AppKit Modal Z-Index Fix */
+/* Ensure wallet modal appears above auth modal and other UI elements */
+
+/* Reown AppKit uses appkit- prefix instead of w3m/wcm */
+appkit-modal,
+appkit-modal-overlay,
+[data-appkit-modal],
+[data-testid*="appkit-modal"] {
+  z-index: 2147483647 !important; /* Maximum z-index value */
+  position: fixed !important;
+}
+
+/* Legacy selectors for compatibility */
+w3m-modal,
+wcm-modal,
+[data-w3m-modal],
+[data-wcm-modal] {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+}
+
+/* Reown AppKit specific components */
+appkit-w3m-modal,
+appkit-w3m-modal-overlay,
+appkit-w3m-modal-backdrop {
+  z-index: 2147483646 !important;
+}
+
+/* Web Components used by Reown */
+wui-flex,
+wui-modal,
+wui-overlay,
+wui-backdrop {
+  z-index: 2147483645 !important;
+}
+
+/* Shadow DOM host elements */
+:host(appkit-modal),
+:host(wui-modal) {
+  z-index: 2147483647 !important;
+}
+
+/* Ensure proper stacking for all modal-related elements */
+[class*="appkit-"],
+[class*="wui-"],
+[class*="w3m-"],
+[class*="wcm-"] {
+  position: relative;
+}
+
+/* Override any inline styles with maximum specificity */
+body > appkit-modal,
+body > w3m-modal,
+body > [data-testid*="modal"] {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+/* ============================================
+   Legal Content Styles
+   Used for Privacy Policy, Terms, About pages
+   ============================================ */
+.legal-content {
+  /* Base text styling */
+  color: hsl(var(--foreground));
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+/* Headings */
+.legal-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: hsl(var(--foreground));
+}
+
+.legal-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: hsl(var(--foreground));
+}
+
+.legal-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+/* Paragraphs */
+.legal-content p {
+  margin-bottom: 1rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.75;
+}
+
+/* Lists */
+.legal-content ul,
+.legal-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.legal-content ul {
+  list-style-type: disc;
+}
+
+.legal-content ol {
+  list-style-type: decimal;
+}
+
+.legal-content li {
+  margin-bottom: 0.5rem;
+  padding-left: 0.25rem;
+}
+
+.legal-content li strong {
+  color: hsl(var(--foreground));
+}
+
+/* Links */
+.legal-content a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.legal-content a:hover {
+  text-decoration: underline;
+}
+
+/* Sections */
+.legal-content section {
+  margin-bottom: 2rem;
+}
+
+/* Info boxes and callouts */
+.legal-content .bg-blue-50,
+.legal-content .bg-blue-950\/30 {
+  background-color: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary) / 0.2);
+}
+
+.legal-content .bg-muted\/50 {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Strong text */
+.legal-content strong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* Horizontal rules */
+.legal-content hr {
+  margin: 2rem 0;
+  border-color: hsl(var(--border));
+}
+
+/* Blockquotes */
+.legal-content blockquote {
+  border-left: 4px solid hsl(var(--primary) / 0.3);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Tables */
+.legal-content table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-collapse: collapse;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.legal-content thead {
+  background-color: hsl(var(--muted));
+}
+
+.legal-content th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--foreground));
+}
+
+.legal-content tbody {
+  background-color: hsl(var(--card));
+}
+
+.legal-content td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+}
+
+/* Rounded containers and cards within legal content */
+.legal-content .rounded-xl,
+.legal-content .rounded-lg,
+.legal-content .rounded-2xl {
+  border-radius: 0.75rem;
+}
+
+.legal-content .bg-card {
+  background-color: hsl(var(--card));
+}
+
+.legal-content .border {
+  border: 1px solid hsl(var(--border));
+}
+
+/* Ensure proper spacing for nested divs */
+.legal-content > div {
+  margin-bottom: 1.5rem;
+}
+
+/* Fix text color inheritance for dark mode */
+.dark .legal-content p,
+.dark .legal-content li,
+.dark .legal-content td {
+  color: hsl(var(--muted-foreground));
+}
+
+.dark .legal-content h1,
+.dark .legal-content h2,
+.dark .legal-content h3,
+.dark .legal-content strong,
+.dark .legal-content th {
+  color: hsl(var(--foreground));
+}
+
+/* =================================================================
+   WYSIWYG Editor Styles
+   ================================================================= */
+
+/* Editor container */
+.wysiwyg-editor {
+  font-family: inherit;
+}
+
+/* Editable content area - inherits legal-content styles */
+.wysiwyg-content {
+  min-height: 200px;
+  cursor: text;
+}
+
+/* Placeholder styling */
+.wysiwyg-content.empty-editor:empty::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+  pointer-events: none;
+  position: absolute;
+}
+
+/* Focus styling */
+.wysiwyg-content:focus {
+  outline: none;
+}
+
+/* Selection highlighting */
+.wysiwyg-content ::selection {
+  background-color: hsl(var(--primary) / 0.2);
+}
+
+/* Ensure images are responsive in editor */
+.wysiwyg-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* Table styling in editor */
+.wysiwyg-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.wysiwyg-content th,
+.wysiwyg-content td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.wysiwyg-content th {
+  background-color: hsl(var(--muted));
+  font-weight: 600;
+}
+
+.wysiwyg-content td {
+  background-color: hsl(var(--card));
+}
+
+/* Code blocks */
+.wysiwyg-content pre {
+  background-color: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+.wysiwyg-content code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  background-color: hsl(var(--muted));
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.wysiwyg-content pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Horizontal rule */
+.wysiwyg-content hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 1.5rem 0;
+}
+
+/* Link hover state in editor */
+.wysiwyg-content a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.wysiwyg-content a:hover {
+  text-decoration: underline;
+}
+
+/* Preview mode styles */
+.wysiwyg-preview {
+  /* Inherits from legal-content */
+}
+
+/* Ensure proper spacing for nested lists */
+.wysiwyg-content ul ul,
+.wysiwyg-content ol ol,
+.wysiwyg-content ul ol,
+.wysiwyg-content ol ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Blockquote styling */
+.wysiwyg-content blockquote {
+  border-left: 4px solid hsl(var(--primary) / 0.3);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.wysiwyg-content blockquote p {
+  margin-bottom: 0.5rem;
+}
+
+.wysiwyg-content blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Dark mode support for WYSIWYG editor */
+.dark .wysiwyg-editor {
+  background-color: hsl(var(--background));
+}
+
+.dark .wysiwyg-content {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.dark .wysiwyg-content.empty-editor:empty::before {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.5;
+}
+
+.dark .wysiwyg-content ::selection {
+  background-color: hsl(var(--primary) / 0.3);
+}
+
+.dark .wysiwyg-content th {
+  background-color: hsl(var(--muted) / 0.8);
+}
+
+.dark .wysiwyg-content td {
+  background-color: hsl(var(--card));
+}
+
+.dark .wysiwyg-content pre,
+.dark .wysiwyg-content code {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+.dark .wysiwyg-content blockquote {
+  border-left-color: hsl(var(--primary) / 0.4);
+  background-color: hsl(var(--muted) / 0.2);
+}
+
+.dark .wysiwyg-preview {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}

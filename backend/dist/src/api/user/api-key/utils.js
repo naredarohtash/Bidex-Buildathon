@@ -1,0 +1,1 @@
+"use strict";function generateApiKey(e=64){let t="";const r=API_KEY_CHARACTERS.length;for(let A=0;A<e;A++){const e=Math.floor(Math.random()*r);t+=API_KEY_CHARACTERS.charAt(e)}return t}Object.defineProperty(exports,"__esModule",{value:!0});exports.generateApiKey=generateApiKey;const API_KEY_CHARACTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
