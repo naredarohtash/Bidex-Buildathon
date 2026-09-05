@@ -22,6 +22,13 @@ extended to view it.
    is a limited, revocable, non-exclusive, non-transferable permission TO READ
    THE SOFTWARE FOR THAT PURPOSE ONLY.
 
+   The access granted over this particular copy is for one such purpose: the
+   judging of a submission to the Razorpay Buildathon. It extends to the
+   organisers and judges of that event, for the duration of it, and to nobody
+   else and no other purpose. Entering the event does not place the Software
+   under any licence, and no term of the event's rules is agreed to on behalf
+   of the copyright holder by the presence of this copy.
+
    It does not permit, and is expressly withheld for:
 
      (a) retaining a copy after the evaluation concludes;

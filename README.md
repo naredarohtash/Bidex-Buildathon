@@ -1,10 +1,23 @@
+> ### Review copy — Razorpay Buildathon
+>
+> **This is not the Bidex repository.** It is a snapshot of one, prepared for
+> a single purpose: submission to the Razorpay Buildathon, so that the judges
+> can read the code.
+>
+> The working repository is private and stays private. This copy carries no
+> development history, no deployment or operations documentation, no database
+> dumps or data exports, and no credentials. It is here to be read, and it is
+> not maintained — nothing will be merged into it, and it will not track the
+> product after the buildathon closes.
+>
+> Terms of access are in [LICENSE.md](LICENSE.md) and summarised below. The
+> short version: read it, judge it, then delete your copy.
+
 # Bidex
 
 A binary options trading platform: a live charting terminal, an order and
 settlement engine, wallets and payments, KYC, an affiliate system and an admin
 back office.
-
-This repository is a **review copy**, prepared for buildathon evaluation.
 
 ---
 
